@@ -1275,3 +1275,22 @@ body:has(#home.active) .site-header.header-scrolled{box-shadow:0 10px 28px rgba(
   #article-page .article-detail-photo.cutout-photo--red{aspect-ratio:1.35!important}
   #article-page .article-detail-photo.cutout-photo--red img{inset:10px;width:calc(100% - 20px)!important;height:calc(100% - 20px)!important}
 }
+
+/* Final local grid corrections; preserve existing layout and image assets. */
+#journal .article-card .article-meta,
+#journal .article-card h3,
+#journal .article-card p{margin-inline:20px!important}
+#journal .article-card .article-art{flex:none;position:relative}
+#journal .article-card .article-art img{position:absolute!important;inset:0;width:100%!important;height:100%!important;aspect-ratio:auto;object-fit:cover!important}
+/* The supplied shadow image contains a narrow baked-in beige border. */
+#journal .article-card [data-article="shadow"] .article-art img,
+#journal .article-card:hover [data-article="shadow"] .article-art img{transform:scale(1.045)!important}
+/* Keep equal media heights even when card descriptions differ in length. */
+#repertoire .show-row .show-art{flex:0 0 auto;box-sizing:border-box;aspect-ratio:1.68!important}
+#repertoire .show-row .show-info{flex:1 0 auto}
+#repertoire .show-age{text-shadow:none!important}
+/* Cover the frame with the two near-4:3 Chicken gallery photos. */
+#show-page[data-show-id="chicken"] .show-detail-gallery img{object-fit:cover!important;object-position:center!important}
+/* The cutout's visible navy background must begin on the same axis as the title. */
+#article-page .article-detail-photo.cutout-photo--red{width:100%!important;margin-inline:0!important;background:var(--navy)!important}
+#article-page .article-detail-photo.cutout-photo--red img{background:transparent!important}
