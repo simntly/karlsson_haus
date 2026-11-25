@@ -58,6 +58,22 @@ const shows={
   karlsson:{title:'Карлссон, который живёт на крыше',meta:'Спектакль · 4+ · 55 минут',intro:'История о дружбе, смелости быть собой и маленьких шалостях, которые делают жизнь веселее.',image:'rep-karlsson.jpg',gallery:['karlsson-gallery-user-1.png','karlsson-gallery-user-2.png'],body:['Малыш уверен, что ему очень не хватает друга. И друг действительно появляется — с пропеллером за спиной, весёлым характером и собственным взглядом на правила.','Вместе они исследуют чердак, знакомятся с новыми персонажами и превращают обычные дни в приключение. Спектакль сохраняет лёгкость сказки Астрид Линдгрен и говорит о важном: дружбе, доверии и умении принимать другого.','Постановка подходит для семейного просмотра. Спектакль рекомендован детям от 4 лет; продолжительность — 55 минут.'],schedule:'28 ноября · 12:00, 14:30, 17:00\n5 декабря · 12:00, 14:30, 17:00',address:'Набережная реки Фонтанки, 50К · Санкт-Петербург\nУлица Ломоносова, 14 · Санкт-Петербург'},
   chicken:{title:'Цыплёнок',meta:'Спектакль · 3+ · 35 минут',intro:'Трогательная история по сказке Корнея Чуковского о первых шагах в огромном мире и о маме, которая всегда рядом.',image:'chicken-hero-user.png',gallery:['chicken-gallery-user-1.png','chicken-gallery-user-2.png'],body:['Маленький цыплёнок знакомится с огромным миром — прекрасным, удивительным и добрым, но порой непростым. Он делает первые шаги, встречает новое и учится справляться с маленькими открытиями и потерями.','Рядом с ним мама: она помогает исследовать неизвестное и остаётся опорой, когда мир кажется слишком большим. Спектакль посвящён нашим мамам и рассказывает об обычном ребёнке, который каждый день становится чуть самостоятельнее.','Постановка создана по мотивам сказки Корнея Чуковского, рекомендована детям старше 3 лет. Продолжительность — 35 минут.'],schedule:'Ближайшие даты спектакля пока не опубликованы. Смотрите расписание театра.',address:'Набережная реки Фонтанки, 50К · Санкт-Петербург\nУлица Ломоносова, 14 · Санкт-Петербург'}
 };
+function setDetailImage(selector,filename,alt){
+  const previous=document.querySelector(selector);
+  const src=`./assets/${filename}`;
+  if(previous.getAttribute('src')===src){previous.alt=alt;return previous;}
+  const image=previous.cloneNode(false);
+  image.removeAttribute('src');
+  image.alt=alt;
+  image.classList.add('detail-image-pending');
+  const reveal=()=>image.classList.remove('detail-image-pending');
+  image.addEventListener('load',reveal,{once:true});
+  image.addEventListener('error',reveal,{once:true});
+  image.src=src;
+  previous.replaceWith(image);
+  if(image.complete&&image.naturalWidth)reveal();
+  return image;
+}
 function renderShow(id){
   const item=shows[id]; if(!item)return false;
   const showPage=document.querySelector('#show-page');
@@ -65,7 +81,7 @@ function renderShow(id){
   document.querySelector('[data-show-meta]').textContent=item.meta.replace(/ · /g,' · ').replace(/ (минут|минута|минуты|час|часа|часов)/giu,' $1');
   document.querySelector('[data-show-title]').textContent=item.title;
   document.querySelector('[data-show-intro]').textContent=item.intro;
-  const image=document.querySelector('[data-show-image]'); image.src=`./assets/${item.image}`; image.alt=`Сцена спектакля «${item.title}»`;
+  setDetailImage('[data-show-image]',item.image,`Сцена спектакля «${item.title}»`);
   document.querySelector('[data-show-body]').replaceChildren(...item.body.map(text=>{const p=document.createElement('p');p.textContent=text;return p}));
   document.querySelector('[data-show-schedule]').textContent=item.schedule;
   document.querySelector('[data-show-address]').innerHTML=item.address.replace(/Санкт-Петербург/g,'<span class="address-city">Санкт-Петербург</span>');
@@ -74,7 +90,7 @@ function renderShow(id){
   if(hasUpcomingDates){const button=document.createElement('span');button.className='hero-cta';button.dataset.showCta='';button.setAttribute('aria-disabled','true');button.textContent='Купить билет';cta.replaceWith(button)}
   else{const link=document.createElement('a');link.className='hero-cta';link.dataset.showCta='';link.href='#schedule';link.textContent='Смотреть расписание';cta.replaceWith(link)}
   const gallery=document.querySelector('.show-detail-gallery');
-  ['one','two','three'].forEach((slot,index)=>{const img=document.querySelector(`[data-show-gallery-${slot}]`);if(img){const visible=Boolean(item.gallery[index]);img.hidden=!visible;if(visible){img.src=`./assets/${item.gallery[index]}`;img.alt=`Фотография спектакля «${item.title}»`}}});
+  ['one','two','three'].forEach((slot,index)=>{const img=document.querySelector(`[data-show-gallery-${slot}]`);if(img){const visible=Boolean(item.gallery[index]);img.hidden=!visible;if(visible){setDetailImage(`[data-show-gallery-${slot}]`,item.gallery[index],`Фотография спектакля «${item.title}»`)}}});
   gallery.style.gridTemplateColumns=`repeat(${Math.max(1,item.gallery.length)},minmax(0,1fr))`;
   document.title=`${item.title} — Karlsson Haus`; return true;
 }
@@ -82,8 +98,7 @@ function renderShow(id){
 function renderArticle(id){
   const item=articles[id];
   if(!item)return false;
-  document.querySelector('[data-article-image]').src=`./assets/${item.image}`;
-  document.querySelector('[data-article-image]').alt=item.title;
+  setDetailImage('[data-article-image]',item.image,item.title);
   const articlePhoto=document.querySelector('.article-detail-photo');
   articlePhoto.classList.toggle('cutout-photo',item.image.endsWith('-cutout.png'));
   articlePhoto.classList.toggle('cutout-photo--red',id==='old-house');
@@ -125,8 +140,7 @@ function showPage(route,updateHash=true){
   navLinks.forEach(link=>link.classList.toggle('active',link.dataset.nav===navPage));
   if(updateHash&&location.hash!==`#${route}`)history.pushState({route},'',`#${route}`);
   nav.classList.remove('open');menuButton.setAttribute('aria-expanded','false');menuButton.textContent='Меню';
-  if(currentName==='show')document.title='Карлссон, который живёт на крыше — Karlsson Haus';
-  else if(currentName!=='article')document.title='Karlsson Haus — театр, журнал, гид';
+  if(currentName!=='show'&&currentName!=='article')document.title='Karlsson Haus — театр, журнал, гид';
   window.scrollTo({top:0,behavior:'smooth'});
 }
 navLinks.forEach(link=>link.addEventListener('click',event=>{event.preventDefault();showPage(link.dataset.nav)}));
@@ -139,7 +153,7 @@ document.querySelectorAll('[data-show]').forEach(link=>link.addEventListener('cl
 function handleRouteChange(){const route=location.hash.slice(1)||'home';if(route==='schedule'){showPage('repertoire');document.getElementById('schedule')?.scrollIntoView({behavior:'smooth'});return}showPage(route,false)}
 window.addEventListener('popstate',handleRouteChange);
 window.addEventListener('hashchange',handleRouteChange);
-window.addEventListener('load',()=>showPage(location.hash.slice(1)||'home',false));
+
 menuButton.addEventListener('click',()=>{const open=nav.classList.toggle('open');menuButton.setAttribute('aria-expanded',String(open));menuButton.textContent=open?'Закрыть':'Меню'});
 
 document.querySelectorAll('.age-tab').forEach(button=>button.addEventListener('click',()=>{
@@ -205,3 +219,5 @@ searchToggle.addEventListener('click',()=>{searchBox.classList.toggle('open');if
 searchInput.addEventListener('input',renderSearchResults);
 searchBox.addEventListener('submit',event=>{event.preventDefault();renderSearchResults();const first=searchResults.querySelector('[data-search-route]');if(first){showPage(first.dataset.searchRoute);searchBox.classList.remove('open');searchResults.classList.remove('open')}});
 searchResults.addEventListener('click',event=>{const link=event.target.closest('[data-search-route]');if(!link)return;event.preventDefault();showPage(link.dataset.searchRoute);searchBox.classList.remove('open');searchResults.classList.remove('open')});
+
+handleRouteChange();
